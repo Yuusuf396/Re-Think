@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+venv/
+env/
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+*.sqlite3
+db.sqlite3
+
+# Environment variables
+.env
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+
+# PyCharm
+.idea/
+
+# Coverage reports
+htmlcov/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Static/media
+/staticfiles/
+/media/
+
+**/migrations/*.py
+!**/migrations/__init__.py
