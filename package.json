@@ -1,0 +1,12 @@
+{
+  "name": "green-track",
+  "version": "1.0.0",
+  "description": "GreenTrack - Climate Impact Tracking App",
+  "scripts": {
+    "build": "cd climatiqq-frontend && npm install && npm run build",
+    "dev": "cd climatiqq-frontend && npm start"
+  },
+  "workspaces": [
+    "climatiqq-frontend"
+  ]
+} 
