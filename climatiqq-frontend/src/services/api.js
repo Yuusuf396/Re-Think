@@ -1,5 +1,5 @@
 // API Service for Rethink - Centralized API calls
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://green-track.onrender.com/api/v1';
 
 class ApiService {
     constructor() {

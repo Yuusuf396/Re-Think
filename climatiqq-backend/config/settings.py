@@ -30,7 +30,9 @@ SECRET_KEY = 'django-insecure-coc0jol0%1pv6d3@$j6sj4@kxe#n0m5_xc&)frp8naiq(gi@o$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# Get allowed hosts from environment or use defaults
+default_hosts = 'localhost,127.0.0.1,green-track.onrender.com'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default_hosts).split(',')
 
 
 
@@ -206,7 +208,8 @@ print("   ❌ No email verification")
 print("   📧 All email features turned off")
 
 # CORS Settings for Production
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',')
+default_cors_origins = 'http://localhost:3000,http://127.0.0.1:3000,https://rethink.vercel.app,https://climatiqq.vercel.app'
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', default_cors_origins).split(',')
 
 # For development only - remove in production
 if DEBUG:
