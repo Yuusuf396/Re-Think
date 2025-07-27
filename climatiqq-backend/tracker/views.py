@@ -313,8 +313,10 @@ class AISuggestionsView(APIView):
         user_data = {
             'entries': [
                 {
-                    'metric_type': entry.metric_type,
-                    'value': entry.value,
+                    'carbon_footprint': entry.value if entry.metric_type == 'carbon' else 0,
+                    'water_usage': entry.value if entry.metric_type == 'water' else 0,
+                    'energy_usage': entry.value if entry.metric_type == 'energy' else 0,
+                    'digital_usage': entry.value if entry.metric_type == 'digital' else 0,
                     'description': entry.description,
                     'created_at': entry.created_at.isoformat()
                 }
@@ -324,10 +326,10 @@ class AISuggestionsView(APIView):
         
         try:
             # Use the global AI model instance
-            suggestions = carbon_ai_model.predict_suggestions(user_data)
+            result = carbon_ai_model.predict_suggestions(user_data)
             
             return Response({
-                'suggestions': suggestions,
+                'suggestions': result.get('suggestions', []),
                 'data_points_analyzed': len(entries),
                 'ai_model': 'CarbonAIModel v1.0'
             })
