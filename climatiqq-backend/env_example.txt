@@ -1,0 +1,29 @@
+# Django Settings
+SECRET_KEY=your-secret-key-here
+DEBUG=True
+
+# Email Configuration (for real email sending)
+# Uncomment and configure these for real email sending
+# EMAIL_HOST_USER=your-email@gmail.com
+# EMAIL_HOST_PASSWORD=your-app-password
+
+# For Gmail, you need to:
+# 1. Enable 2-factor authentication
+# 2. Generate an App Password
+# 3. Use the App Password here (not your regular password)
+
+# Example Gmail configuration:
+# EMAIL_HOST_USER=yourname@gmail.com
+# EMAIL_HOST_PASSWORD=abcd efgh ijkl mnop
+
+# For other email providers:
+# EMAIL_HOST=smtp.outlook.com  # For Outlook
+# EMAIL_HOST=smtp.yahoo.com    # For Yahoo
+# EMAIL_HOST=smtp.mailgun.org  # For Mailgun
+# EMAIL_HOST=smtp.sendgrid.net # For SendGrid
+
+# To enable real email sending:
+# 1. Uncomment the EMAIL_HOST_USER and EMAIL_HOST_PASSWORD lines above
+# 2. Add your actual email credentials
+# 3. Change EMAIL_BACKEND in settings.py to 'django.core.mail.backends.smtp.EmailBackend'
+# 4. Restart the Django server 

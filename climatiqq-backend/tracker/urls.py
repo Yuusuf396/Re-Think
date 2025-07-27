@@ -1,35 +1,68 @@
 from django.urls import path
 from .views import (
-    RegisterView, CustomTokenObtainPairView, ProfileView, 
-    ImpactEntryListCreateView, ImpactEntryDetailView, ImpactStatsView, 
-    dashboard_view, entries_list_view, stats_view, ChatGPTSuggestionsView,
-    PasswordResetRequestView, PasswordResetConfirmView, 
-    EmailVerificationView, EmailVerificationConfirmView, ChangePasswordView,
-    TestUserView
+    RegisterView, CustomTokenObtainPairView, ProfileView,
+    ImpactEntryListCreateView, ImpactEntryDetailView, ImpactStatsView,
+    AISuggestionsView, ChatGPTSuggestionsView, 
+    # PasswordResetRequestView,  # Disabled
+    # PasswordResetConfirmView,  # Disabled
+    # EmailVerificationView,  # Disabled
+    # EmailVerificationConfirmView,  # Disabled
+    ChangePasswordView, TestUserView, HealthCheckView, SimpleTestView, 
+    # EmailTestView,  # Disabled
+    dashboard_view, entries_list_view, stats_view
 )
+# Temporarily comment out auth_views to isolate the issue
+# from .auth_views import (
+#     EnhancedRegisterView, EnhancedLoginView, EnhancedPasswordChangeView,
+#     EnhancedPasswordResetRequestView, EnhancedPasswordResetConfirmView,
+#     UserProfileView, LogoutView, SecurityLogView
+# )
 
 urlpatterns = [
-    # Authentication endpoints
-    path('auth/register/', RegisterView.as_view(), name='register'),
-    path('auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('auth/profile/', ProfileView.as_view(), name='profile'),
-    path('auth/password-reset/', PasswordResetRequestView.as_view(), name='password-reset-request'),
-    path('auth/password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
-    path('auth/email-verification/', EmailVerificationView.as_view(), name='email-verification'),
-    path('auth/email-verification/confirm/', EmailVerificationConfirmView.as_view(), name='email-verification-confirm'),
-    path('auth/change-password/', ChangePasswordView.as_view(), name='change-password'),
+    # Health check endpoint
+    path('health/', HealthCheckView.as_view(), name='health_check'),
     
-    # Test endpoint
-    path('test-users/', TestUserView.as_view(), name='test-users'),
+    # Simple test endpoint (no auth models dependency)
+    path('test-simple/', SimpleTestView.as_view(), name='test_simple'),
     
-    # Impact entries endpoints
-    path('impact-entries/', ImpactEntryListCreateView.as_view(), name='impactentry-list-create'),
-    path('impact-entries/<int:pk>/', ImpactEntryDetailView.as_view(), name='impactentry-detail'),
-    path('impact-stats/', ImpactStatsView.as_view(), name='impact-stats'),
-    path('suggestions/', ChatGPTSuggestionsView.as_view(), name='chatgpt-suggestions'),
+    # Email test endpoint
+    # path('test-email/', EmailTestView.as_view(), name='test_email'), # Disabled
     
-    # Web views (for browser) - these were added but then the user shifted to React
-    path('dashboard/', dashboard_view, name='dashboard'),
-    path('entries/', entries_list_view, name='entries-list'),
-    path('stats/', stats_view, name='stats'),
+    # Temporarily comment out enhanced auth endpoints
+    # # Enhanced Authentication Endpoints
+    # path('auth/register/', EnhancedRegisterView.as_view(), name='enhanced_register'),
+    # path('auth/login/', EnhancedLoginView.as_view(), name='enhanced_login'),
+    # path('auth/logout/', LogoutView.as_view(), name='enhanced_logout'),
+    # path('auth/password/change/', EnhancedPasswordChangeView.as_view(), name='enhanced_password_change'),
+    # path('auth/password/reset/', EnhancedPasswordResetRequestView.as_view(), name='enhanced_password_reset'),
+    # path('auth/password/reset/confirm/', EnhancedPasswordResetConfirmView.as_view(), name='enhanced_password_reset_confirm'),
+    # path('auth/profile/', UserProfileView.as_view(), name='enhanced_profile'),
+    # path('auth/security-logs/', SecurityLogView.as_view(), name='security_logs'),
+    
+    # Legacy Authentication Endpoints (for backward compatibility)
+    path('register/', RegisterView.as_view(), name='register'),
+    path('login/', CustomTokenObtainPairView.as_view(), name='login'),
+    path('profile/', ProfileView.as_view(), name='profile'),
+    # path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset'), # Disabled
+    # path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'), # Disabled
+    # path('email-verification/', EmailVerificationView.as_view(), name='email_verification'), # Disabled
+    # path('email-verification/confirm/', EmailVerificationConfirmView.as_view(), name='email_verification_confirm'), # Disabled
+    path('change-password/', ChangePasswordView.as_view(), name='change_password'),
+    
+    # Impact Entry Endpoints
+    path('entries/', ImpactEntryListCreateView.as_view(), name='entries'),
+    path('entries/<int:pk>/', ImpactEntryDetailView.as_view(), name='entry_detail'),
+    path('stats/', ImpactStatsView.as_view(), name='stats'),
+    
+    # AI Suggestions Endpoints
+    path('ai-suggestions/', AISuggestionsView.as_view(), name='ai_suggestions'),
+    path('chatgpt-suggestions/', ChatGPTSuggestionsView.as_view(), name='chatgpt_suggestions'),
+    
+    # Test Endpoints
+    path('test-user/', TestUserView.as_view(), name='test_user'),
+    
+    # Legacy Template Views (for backward compatibility)
+    path('dashboard/', dashboard_view, name='dashboard_view'),
+    path('entries-list/', entries_list_view, name='entries_list_view'),
+    path('stats-view/', stats_view, name='stats_view'),
 ] 
