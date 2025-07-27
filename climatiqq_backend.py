@@ -1,6 +1,6 @@
 """
-WSGI config for the project.
-Uses the correct module name for Render deployment.
+WSGI module for Render deployment.
+This file allows Render to import climatiqq_backend.wsgi
 """
 
 import os
@@ -20,7 +20,6 @@ django.setup()
 # Import the application from the backend config
 from config.wsgi import application
 
-# For debugging
-print(f"✅ WSGI loaded successfully")
-print(f"✅ Django settings: {os.environ.get('DJANGO_SETTINGS_MODULE')}")
-print(f"✅ Python path includes: {backend_path}") 
+# Create a wsgi module
+class wsgi:
+    application = application 
