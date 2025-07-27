@@ -18,6 +18,16 @@ from .views import (
 #     UserProfileView, LogoutView, SecurityLogView
 # )
 
+# Simple logout view
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+class LogoutView(APIView):
+    def post(self, request):
+        # Simple logout - just return success
+        return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
+
 urlpatterns = [
     # Health check endpoint
     path('health/', HealthCheckView.as_view(), name='health_check'),
@@ -42,6 +52,7 @@ urlpatterns = [
     # Legacy Authentication Endpoints (for backward compatibility)
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', CustomTokenObtainPairView.as_view(), name='login'),
+    path('logout/', LogoutView.as_view(), name='logout'),  # Added missing logout endpoint
     path('profile/', ProfileView.as_view(), name='profile'),
     # path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset'), # Disabled
     # path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'), # Disabled

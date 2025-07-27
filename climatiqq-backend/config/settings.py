@@ -211,14 +211,11 @@ print("   ❌ No email verification")
 print("   📧 All email features turned off")
 
 # CORS Settings for Production
-default_cors_origins = 'http://localhost:3000,http://127.0.0.1:3000,https://rethink.vercel.app,https://climatiqq.vercel.app'
+default_cors_origins = 'http://localhost:3000,http://127.0.0.1:3000,https://rethink.vercel.app,https://climatiqq.vercel.app,https://vercel.app,http://rethink-lake.vercel.app'
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', default_cors_origins).split(',')
 
-# For development only - remove in production
-if DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    CORS_ALLOW_ALL_ORIGINS = False
+# For debugging - temporarily allow all origins
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_CREDENTIALS = True
 
