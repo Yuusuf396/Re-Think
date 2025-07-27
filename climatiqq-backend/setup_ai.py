@@ -1,64 +1,63 @@
 #!/usr/bin/env python3
 """
 Quick AI Setup Script
-Installs dependencies and trains the AI model in under 5 minutes
+Sets up the rule-based AI model (no heavy dependencies required)
 """
 
 import subprocess
 import sys
 import os
 
-def install_dependencies():
-    """Install required AI dependencies"""
-    print("📦 Installing AI dependencies...")
+def check_dependencies():
+    """Check if basic dependencies are available"""
+    print("📦 Checking dependencies...")
     
-    dependencies = [
-        'scikit-learn',
-        'numpy',
-        'pandas',
-        'joblib'
-    ]
+    try:
+        import django
+        print("✅ Django available")
+    except ImportError:
+        print("❌ Django not found")
+        return False
     
-    for dep in dependencies:
-        try:
-            subprocess.check_call([sys.executable, '-m', 'pip', 'install', dep])
-            print(f"✅ Installed {dep}")
-        except subprocess.CalledProcessError:
-            print(f"❌ Failed to install {dep}")
-            return False
+    try:
+        import openai
+        print("✅ OpenAI available")
+    except ImportError:
+        print("❌ OpenAI not found")
+        return False
     
     return True
 
-def train_model():
-    """Train the AI model"""
-    print("\n🤖 Training AI Model...")
+def test_ai_model():
+    """Test the rule-based AI model"""
+    print("\n🤖 Testing AI Model...")
     
     try:
-        # Import and train
-        from tracker.train_ai_model import main
-        main()
-        return True
+        # Import and test
+        from tracker.test_ai_model import test_ai_model
+        success = test_ai_model()
+        return success
     except Exception as e:
-        print(f"❌ Training failed: {str(e)}")
+        print(f"❌ AI model test failed: {str(e)}")
         return False
 
 def main():
     print("🚀 Rethink AI Setup")
     print("=" * 40)
     
-    # Install dependencies
-    if not install_dependencies():
-        print("❌ Failed to install dependencies")
+    # Check dependencies
+    if not check_dependencies():
+        print("❌ Missing dependencies")
         return
     
-    # Train model
-    if not train_model():
-        print("❌ Failed to train model")
+    # Test AI model
+    if not test_ai_model():
+        print("❌ AI model test failed")
         return
     
     print("\n🎉 AI Setup Complete!")
     print("\n📝 What's ready:")
-    print("   ✅ AI model trained and saved")
+    print("   ✅ Rule-based AI model working")
     print("   ✅ Personalized carbon reduction suggestions")
     print("   ✅ Impact and effort ratings")
     print("   ✅ 15+ different suggestion types")

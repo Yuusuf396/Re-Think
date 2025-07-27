@@ -30,10 +30,10 @@ def main():
         ('dotenv', 'python-dotenv'),
         ('jwt', 'PyJWT'),
         ('openai', 'OpenAI'),
-        ('sklearn', 'scikit-learn'),
-        ('numpy', 'NumPy'),
-        ('pandas', 'Pandas'),
-        ('joblib', 'joblib'),
+        ('gunicorn', 'Gunicorn'),
+        ('whitenoise', 'WhiteNoise'),
+        ('dj_database_url', 'dj-database-url'),
+        ('psycopg2', 'psycopg2-binary'),
     ]
     
     results = []
