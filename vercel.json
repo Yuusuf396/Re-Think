@@ -1,7 +1,6 @@
 {
-  "buildCommand": "cd climatiqq-frontend && npm run build",
+  "buildCommand": "cd climatiqq-frontend && npm install && npm run build",
   "outputDirectory": "climatiqq-frontend/build",
-  "installCommand": "cd climatiqq-frontend && npm install",
   "framework": "create-react-app",
   "rewrites": [
     {
