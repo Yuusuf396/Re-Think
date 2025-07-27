@@ -31,9 +31,12 @@ SECRET_KEY = 'django-insecure-coc0jol0%1pv6d3@$j6sj4@kxe#n0m5_xc&)frp8naiq(gi@o$
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 # Get allowed hosts from environment or use defaults
-default_hosts = 'localhost,127.0.0.1,green-track.onrender.com'
+default_hosts = 'localhost,127.0.0.1,green-track.onrender.com,*.onrender.com'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default_hosts).split(',')
 
+# For debugging - temporarily allow all hosts
+if DEBUG:
+    ALLOWED_HOSTS = ['*']
 
 
 CORS_ALLOW_ALL_ORIGINS = True  # For development only!

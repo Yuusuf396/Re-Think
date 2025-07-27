@@ -16,8 +16,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+def test_view(request):
+    """Simple test view to debug 400 errors"""
+    return JsonResponse({
+        'status': 'ok',
+        'message': 'Backend is working!',
+        'allowed_hosts': request.get_host(),
+        'debug': request.META.get('DEBUG', 'False')
+    })
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include('tracker.urls')),
+    path('test/', test_view, name='test'),
+    path('', test_view, name='root'),
 ]
