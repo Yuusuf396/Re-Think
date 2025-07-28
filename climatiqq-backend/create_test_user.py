@@ -1,83 +1,42 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
-Script to create a test user for testing login functionality
+Create test user for the application
 """
+
 import os
-import sys
 import django
-
-# Add the project directory to the Python path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-# Set up Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
-django.setup()
-
 from django.contrib.auth import get_user_model
-from tracker.models import ImpactEntry
 
-User = get_user_model()
-
-def create_test_user():
-    """Create a test user for login testing"""
-    try:
-        # Check if test user already exists
-        username = 'adebayoayomide'
-        if User.objects.filter(username=username).exists():
-            print(f"✅ Test user '{username}' already exists")
-            user = User.objects.get(username=username)
-            print(f"   User ID: {user.id}")
-            print(f"   Email: {user.email}")
-            print(f"   Is Active: {user.is_active}")
-            return user
-        
-        # Create test user
+def main():
+    """Create test user"""
+    # Set up Django
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    django.setup()
+    
+    User = get_user_model()
+    
+    # Create test user
+    username = 'adebayoayomide'
+    email = 'adebayo@example.com'
+    password = '123'
+    
+    if not User.objects.filter(username=username).exists():
+        print(f"👤 Creating test user: {username}")
         user = User.objects.create_user(
             username=username,
-            email='adebayo@example.com',
-            password='123'  # Simple password for testing
+            email=email,
+            password=password
         )
-        
-        print(f"✅ Created test user '{username}'")
-        print(f"   User ID: {user.id}")
-        print(f"   Email: {user.email}")
-        print(f"   Password: 123")
-        
-        return user
-        
-    except Exception as e:
-        print(f"❌ Error creating test user: {e}")
-        return None
-
-def test_login():
-    """Test login functionality"""
-    try:
-        from django.contrib.auth import authenticate
-        
-        # Test authentication
-        user = authenticate(username='adebayoayomide', password='123')
-        
-        if user:
-            print("✅ Login test successful!")
-            print(f"   Authenticated user: {user.username}")
-            return True
-        else:
-            print("❌ Login test failed!")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Error testing login: {e}")
-        return False
+        print(f"✅ Test user created: {username}")
+        print(f"   Email: {email}")
+        print(f"   Password: {password}")
+    else:
+        print(f"👤 Test user already exists: {username}")
+    
+    # List all users
+    print("\n📋 All users:")
+    for user in User.objects.all():
+        print(f"   - {user.username} ({user.email})")
 
 if __name__ == "__main__":
-    print("Creating test user...")
-    user = create_test_user()
-    
-    if user:
-        print("\nTesting login...")
-        test_login()
-    
-    print("\nTest user credentials:")
-    print("Username: adebayoayomide")
-    print("Password: 123")
-    print("Email: adebayo@example.com") 
+    main() 
