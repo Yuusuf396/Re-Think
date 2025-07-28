@@ -10,7 +10,11 @@ services:
     env: python
     plan: free
     buildCommand: chmod +x build.sh && ./build.sh
-    startCommand: cd climatiqq-backend && python simple_startup.py && PYTHONPATH=. gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    startCommand: |
+      cd climatiqq-backend && \
+      python simple_startup.py && \
+      python manage.py migrate && \
+      PYTHONPATH=. gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.0
@@ -25,4 +29,4 @@ services:
       - key: DATABASE_URL
         fromDatabase:
           name: climatiqq-db
-          property: connectionString 
+          property: connectionString
