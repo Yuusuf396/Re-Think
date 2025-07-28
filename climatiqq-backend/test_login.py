@@ -1,90 +1,49 @@
 #!/usr/bin/env python3
 """
-Simple script to test login functionality and create test users
+Test login functionality
 """
 
 import os
+import sys
 import django
-
-# Setup Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
-django.setup()
-
-from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
-
-User = get_user_model()
-
-def create_test_user():
-    """Create a test user for login testing"""
-    username = "testuser"
-    email = "test@example.com"
-    password = "testpass123"
-    
-    # Check if user exists
-    if User.objects.filter(username=username).exists():
-        print(f"User '{username}' already exists")
-        return username, password
-    
-    # Create new user
-    user = User.objects.create_user(
-        username=username,
-        email=email,
-        password=password
-    )
-    print(f"✅ Created test user: {username}")
-    print(f"   Email: {email}")
-    print(f"   Password: {password}")
-    return username, password
-
-def test_login(username, password):
-    """Test login with given credentials"""
-    print(f"\n🔐 Testing login with: {username}")
-    
-    # Test Django authentication
-    user = authenticate(username=username, password=password)
-    if user:
-        print(f"✅ Authentication successful!")
-        print(f"   User ID: {user.id}")
-        print(f"   Username: {user.username}")
-        print(f"   Email: {user.email}")
-        print(f"   Is Active: {user.is_active}")
-        return True
-    else:
-        print(f"❌ Authentication failed!")
-        return False
-
-def list_all_users():
-    """List all users in the database"""
-    print("\n📋 All users in database:")
-    users = User.objects.all()
-    
-    if not users.exists():
-        print("   No users found")
-        return
-    
-    for user in users:
-        print(f"   ID: {user.id}, Username: {user.username}, Email: {user.email}, Active: {user.is_active}")
+from django.contrib.auth import get_user_model
 
 def main():
-    print("🌱 Rethink - Login Test Script")
-    print("=" * 40)
+    """Test login functionality"""
+    print("🧪 Testing login functionality...")
     
-    # List existing users
-    list_all_users()
+    # Set up Django
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    django.setup()
     
-    # Create test user
-    username, password = create_test_user()
+    User = get_user_model()
     
-    # Test login
-    test_login(username, password)
+    # Check if test user exists
+    try:
+        user = User.objects.get(username='adebayoayomide')
+        print(f"✅ Test user exists: {user.username}")
+        print(f"   Email: {user.email}")
+        print(f"   Is active: {user.is_active}")
+        
+        # Test authentication
+        auth_user = authenticate(username='adebayoayomide', password='123')
+        if auth_user:
+            print("✅ Authentication successful!")
+        else:
+            print("❌ Authentication failed!")
+            return False
+            
+    except User.DoesNotExist:
+        print("❌ Test user does not exist!")
+        return False
+    except Exception as e:
+        print(f"❌ Error testing login: {e}")
+        return False
     
-    print("\n🎯 Test Credentials:")
-    print(f"   Username: {username}")
-    print(f"   Password: {password}")
-    print(f"   Email: test@example.com")
-    
-    print("\n💡 Try logging in with these credentials in your app!")
+    print("✅ Login test passed!")
+    return True
 
 if __name__ == "__main__":
-    main() 
+    success = main()
+    sys.exit(0 if success else 1) 

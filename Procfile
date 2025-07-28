@@ -1,1 +1,1 @@
-web: cd climatiqq-backend && python force_all_migrations.py && PYTHONPATH=. gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120 
+web: cd climatiqq-backend && python emergency_db_fix.py && PYTHONPATH=. gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120 
