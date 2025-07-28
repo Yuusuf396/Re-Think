@@ -88,19 +88,37 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 import dj_database_url
+import os
 
-DATABASES = {
-    'default': dj_database_url.config(
-        # Replace this value with your local database's connection string.
-        default='postgresql://postgres:postgres@localhost:5432/climatiqq',
-        conn_max_age=600
-    )
-}
+# Try PostgreSQL first, fallback to SQLite if connection fails
+DATABASE_URL = os.getenv('DATABASE_URL')
 
-# Only use PostgreSQL if explicitly set (for future flexibility)
-# if os.getenv('DATABASE_URL'):
-#     import dj_database_url
-#     DATABASES['default'] = dj_database_url.parse(os.getenv('DATABASE_URL'))
+if DATABASE_URL:
+    try:
+        DATABASES = {
+            'default': dj_database_url.config(
+                default=DATABASE_URL,
+                conn_max_age=600
+            )
+        }
+        print("✅ Using PostgreSQL database")
+    except Exception as e:
+        print(f"⚠️ PostgreSQL connection failed: {e}")
+        print("🔄 Falling back to SQLite...")
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
+else:
+    print("🔄 No DATABASE_URL found, using SQLite...")
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
