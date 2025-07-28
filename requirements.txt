@@ -35,3 +35,7 @@ tqdm==4.67.1
 typing-inspection==0.4.1
 typing_extensions==4.14.1
 tzdata==2025.2
+gunicorn
+dj-database-url
+python-decouple
+python-dotenv
