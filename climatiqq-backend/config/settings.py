@@ -94,10 +94,10 @@ DATABASES = {
     }
 }
 
-# Use PostgreSQL in production if DATABASE_URL is set
-if os.getenv('DATABASE_URL'):
-    import dj_database_url
-    DATABASES['default'] = dj_database_url.parse(os.getenv('DATABASE_URL'))
+# Only use PostgreSQL if explicitly set (for future flexibility)
+# if os.getenv('DATABASE_URL'):
+#     import dj_database_url
+#     DATABASES['default'] = dj_database_url.parse(os.getenv('DATABASE_URL'))
 
 
 # Password validation

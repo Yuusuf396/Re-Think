@@ -1,1 +1,1 @@
-web: cd climatiqq-backend && python simple_fix.py && PYTHONPATH=. gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120 
+web: cd climatiqq-backend && python sqlite_setup.py && PYTHONPATH=. gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120 
