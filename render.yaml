@@ -2,7 +2,7 @@ databases:
   - name: climatiqq-db
     plan: free
     databaseName: climatiqq
-    user: climatiqq
+    user: climatiqq_user
 
 services:
   - type: web
