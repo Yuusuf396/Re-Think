@@ -13,8 +13,9 @@ services:
     startCommand: |
       cd climatiqq-backend && \
       python simple_startup.py && \
-      python manage.py migrate && \
       PYTHONPATH=. gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+
+
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.0
