@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import apiService from '../services/api';
 import './Suggestions.css';
 
 const Suggestions = ({ token, darkMode }) => {
@@ -13,24 +14,18 @@ const Suggestions = ({ token, darkMode }) => {
     setError('');
 
     try {
-      const response = await fetch('https://green-track.onrender.com/api/v1/ai-suggestions/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        }
-      });
+      // Use the apiService which now points to localhost:8000
+      const data = await apiService.ai.getSuggestions({});
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (data && data.suggestions) {
         setSuggestions(data.suggestions || []);
         setDataPoints(data.data_points_analyzed || 0);
       } else {
-        setError(data.error || 'Failed to get suggestions');
+        setError('No suggestions received from AI');
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      console.error('AI suggestions error:', err);
+      setError(err.message || 'Failed to get suggestions. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -100,16 +95,6 @@ const Suggestions = ({ token, darkMode }) => {
             </div>
           </>
         )}
-
-        <div className="suggestions-info">
-          <h3>How it works:</h3>
-          <ul>
-            <li>Our AI analyzes your carbon usage patterns</li>
-            <li>Provides personalized, actionable advice</li>
-            <li>Gets smarter as you add more data</li>
-            <li>Focuses on practical, achievable changes</li>
-          </ul>
-        </div>
       </div>
     </div>
   );

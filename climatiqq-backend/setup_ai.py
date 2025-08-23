@@ -33,10 +33,22 @@ def test_ai_model():
     print("\n🤖 Testing AI Model...")
     
     try:
-        # Import and test
-        from tracker.test_ai_model import test_ai_model
-        success = test_ai_model()
-        return success
+        # Import and test directly
+        from tracker.ai_model import carbon_ai_model
+        
+        # Test with sample data
+        test_data = {
+            'entries': [
+                {'carbon_footprint': 15.5, 'water_usage': 180, 'energy_usage': 12.3, 'created_at': '2024-01-15T10:00:00Z'},
+                {'carbon_footprint': 8.2, 'water_usage': 120, 'energy_usage': 6.7, 'created_at': '2024-01-16T10:00:00Z'},
+                {'carbon_footprint': 22.1, 'water_usage': 250, 'energy_usage': 15.8, 'created_at': '2024-01-17T10:00:00Z'}
+            ]
+        }
+        
+        result = carbon_ai_model.predict_suggestions(test_data)
+        print(f"✅ AI model working! Generated {len(result.get('suggestions', []))} suggestions")
+        return True
+        
     except Exception as e:
         print(f"❌ AI model test failed: {str(e)}")
         return False
