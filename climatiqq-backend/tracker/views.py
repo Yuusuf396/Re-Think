@@ -16,6 +16,7 @@ import os
 from .serializers import UserRegistrationSerializer, ImpactEntrySerializer
 from .models import ImpactEntry
 from .ai_model import carbon_ai_model
+from .services.sendgrid_service import sendgrid_service
 
 User = get_user_model()
 
@@ -38,6 +39,9 @@ class RegisterView(generics.CreateAPIView):
                 try:
                     user = User.objects.get(username=user_data['username'])
                     
+                    # Send welcome email using SendGrid
+                    email_result = sendgrid_service.send_registration_email(user, request)
+                    
                     # Generate JWT tokens for the new user
                     refresh = RefreshToken.for_user(user)
                     
@@ -47,7 +51,10 @@ class RegisterView(generics.CreateAPIView):
                         'user': {
                             'username': user.username,
                             'email': user.email
-                        }
+                        },
+                        'email_sent': email_result['success'],
+                        'email_status': email_result.get('status_code'),
+                        'message_id': email_result.get('message_id')
                     }
                     
                 except User.DoesNotExist:
@@ -305,7 +312,14 @@ class ChangePasswordView(APIView):
         user.set_password(new_password)
         user.save()
         
-        return Response({'message': 'Password changed successfully'})
+        # Send password change confirmation email
+        email_result = sendgrid_service.send_password_change_confirmation(user)
+        
+        return Response({
+            'message': 'Password changed successfully',
+            'email_sent': email_result['success'],
+            'email_status': email_result.get('status_code')
+        })
 
 class TestUserView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -387,3 +401,75 @@ def stats_view(request):
         'metric_breakdown': metric_breakdown,
     }
     return render(request, 'tracker/stats.html', context)
+
+
+class PasswordResetRequestView(APIView):
+    """Request password reset via email"""
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        email = request.data.get('email')
+        
+        if not email:
+            return Response({'error': 'Email address is required'}, status=400)
+        
+        try:
+            user = User.objects.get(email=email)
+            result = sendgrid_service.send_password_reset_email(user, request)
+            
+            if result['success']:
+                return Response({
+                    'message': 'Password reset email sent successfully',
+                    'email': email,
+                    'status': 'success'
+                })
+            else:
+                return Response({
+                    'error': 'Failed to send email',
+                    'details': result.get('error')
+                }, status=500)
+                
+        except User.DoesNotExist:
+            # Don't reveal if user exists or not for security
+            return Response({
+                'message': 'If an account exists with this email, a reset link has been sent.',
+                'email': email,
+                'status': 'success'
+            })
+
+
+class PasswordResetConfirmView(APIView):
+    """Confirm password reset with token"""
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        uid = request.data.get('uid')
+        token = request.data.get('token')
+        new_password = request.data.get('new_password')
+        
+        if not all([uid, token, new_password]):
+            return Response({
+                'error': 'All fields are required: uid, token, new_password'
+            }, status=400)
+        
+        # Validate the reset token
+        validation_result = sendgrid_service.validate_reset_token(uid, token)
+        
+        if not validation_result['valid']:
+            return Response({
+                'error': validation_result['error']
+            }, status=400)
+        
+        # Update user password
+        user = validation_result['user']
+        user.set_password(new_password)
+        user.save()
+        
+        # Send confirmation email
+        email_result = sendgrid_service.send_password_change_confirmation(user)
+        
+        return Response({
+            'message': 'Password reset successfully',
+            'email_sent': email_result['success'],
+            'status': 'success'
+        })

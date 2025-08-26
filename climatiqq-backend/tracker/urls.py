@@ -4,6 +4,7 @@ from .views import (
     ImpactEntryListCreateView, ImpactEntryDetailView, ImpactStatsView,
     AISuggestionsView, ChatGPTSuggestionsView, 
     ChangePasswordView, TestUserView, HealthCheckView, SimpleTestView, 
+    PasswordResetRequestView, PasswordResetConfirmView,
     dashboard_view, entries_list_view, stats_view
 )
 
@@ -30,6 +31,10 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),  # Added missing logout endpoint
     path('profile/', ProfileView.as_view(), name='profile'),
     path('change-password/', ChangePasswordView.as_view(), name='change_password'),
+    
+    # Password Reset Endpoints
+    path('password-reset-request/', PasswordResetRequestView.as_view(), name='password_reset_request'),
+    path('password-reset-confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     
     # Impact Entry Endpoints
     path('entries/', ImpactEntryListCreateView.as_view(), name='entries'),

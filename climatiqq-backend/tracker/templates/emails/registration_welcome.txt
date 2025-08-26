@@ -1,0 +1,17 @@
+Welcome to GreenTrack - Climatiqq!
+
+Hi {{ user.username }},
+
+Welcome to {{ app_name }}! We're excited to have you on board.
+
+Your account has been successfully created and you can now start tracking your carbon footprint and making a positive impact on the environment.
+
+To get started, visit: {{ frontend_url }}
+
+If you have any questions or need assistance, please don't hesitate to contact us at {{ support_email }}.
+
+Best regards,
+The {{ app_name }} Team
+
+---
+This is an automated message, please do not reply directly to this email.
