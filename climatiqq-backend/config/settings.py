@@ -211,3 +211,8 @@ if not DEBUG:
     # Other security settings
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# 🚀 Added: User Profile Feature Configuration
+# Enable user profile endpoints and features
+USER_PROFILE_ENABLED = True
+USER_PROFILE_DETAILS = ['username', 'email', 'first_name', 'last_name', 'date_joined', 'impact_count']

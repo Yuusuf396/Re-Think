@@ -1,0 +1,6 @@
+<div class="profile-summary">
+    <h3>Welcome back, {{ user.username }}!</h3>
+    <p>Member since: {{ user.date_joined|date:"F j, Y" }}</p>
+    <p>Total impact entries: {{ impact_entries_count }}</p>
+    <p>Last login: {{ user.last_login|date:"F j, Y g:i A"|default:"First time" }}</p>
+</div>
