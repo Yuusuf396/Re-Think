@@ -83,7 +83,10 @@ class SendGridService:
             
             # Prepare context for template
             context = {
-                'user': user,
+               'user': user,
+                'first_name': user.first_name or user.username,  # Add this
+                'username': user.username,                       # Add this
+                'login_url': f"{self.frontend_url}/login",      # Add this
                 'app_name': self.app_name,
                 'frontend_url': self.frontend_url,
                 'support_email': getattr(settings, 'SUPPORT_EMAIL', 'support@climatiqq.com')

@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     RegisterView, CustomTokenObtainPairView, ProfileView,
     ImpactEntryListCreateView, ImpactEntryDetailView, ImpactStatsView,
-    AISuggestionsView, ChatGPTSuggestionsView, 
+    AISuggestionsView, 
     ChangePasswordView, TestUserView, HealthCheckView, SimpleTestView, 
     PasswordResetRequestView, PasswordResetConfirmView,
     dashboard_view, entries_list_view, stats_view, UserProfileView
@@ -19,32 +19,6 @@ class LogoutView(APIView):
     def post(self, request):
         # Simple logout - just return success
         return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
-
-class UserProfileView(APIView):
-    """Get basic user profile information"""
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def get(self, request):
-        user = request.user
-        
-        # Get user's impact entry count
-        impact_count = ImpactEntry.objects.filter(user=user).count()
-        
-        # Get user's join date
-        join_date = user.date_joined.strftime('%Y-%m-%d') if user.date_joined else None
-        
-        profile_data = {
-            'username': user.username,
-            'email': user.email,
-            'first_name': user.first_name or '',
-            'last_name': user.last_name or '',
-            'date_joined': join_date,
-            'impact_entries_count': impact_count,
-            'is_active': user.is_active,
-            'last_login': user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else None
-        }
-        
-        return Response(profile_data)
 
 urlpatterns = [
     # Health check endpoint
@@ -71,7 +45,6 @@ urlpatterns = [
     
     # AI Suggestions Endpoints
     path('ai-suggestions/', AISuggestionsView.as_view(), name='ai_suggestions'),
-    path('chatgpt-suggestions/', ChatGPTSuggestionsView.as_view(), name='chatgpt_suggestions'),
     
     # Test Endpoints
     path('test-user/', TestUserView.as_view(), name='test_user'),

@@ -10,7 +10,6 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Avg, Count
 from django.utils import timezone
 from datetime import timedelta
-import openai
 import os
 
 from .serializers import UserRegistrationSerializer, ImpactEntrySerializer
@@ -20,31 +19,47 @@ from .services.sendgrid_service import sendgrid_service
 
 User = get_user_model()
 
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """Simple serializer for username-only login"""
-    
+
     def validate(self, attrs):
         return super().validate(attrs)
+
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [permissions.AllowAny]
-    
+
     def create(self, request, *args, **kwargs):
         try:
+            print(f"Registration attempt with data: {request.data}")
+
+            # Create the user
             response = super().create(request, *args, **kwargs)
-            
+
             if response.status_code == 201:
                 user_data = response.data
                 try:
                     user = User.objects.get(username=user_data['username'])
-                    
-                    # Send welcome email using SendGrid
-                    email_result = sendgrid_service.send_registration_email(user, request)
-                    
+                    print(f"User created successfully: {user.username}")
+
+                    # Try to send welcome email using SendGrid
+                    email_result = {'success': False,
+                                    'error': 'Email not attempted'}
+                    try:
+                        email_result = sendgrid_service.send_registration_email(
+                            user, request)
+                        print(f"Email result: {email_result}")
+                    except Exception as email_error:
+                        print(
+                            f"Email service error (non-critical): {str(email_error)}")
+                        email_result = {'success': False,
+                                        'error': str(email_error)}
+
                     # Generate JWT tokens for the new user
                     refresh = RefreshToken.for_user(user)
-                    
+
                     response.data = {
                         'access': str(refresh.access_token),
                         'refresh': str(refresh),
@@ -52,22 +67,32 @@ class RegisterView(generics.CreateAPIView):
                             'username': user.username,
                             'email': user.email
                         },
-                        'email_sent': email_result['success'],
+                        'email_sent': email_result.get('success', False),
                         'email_status': email_result.get('status_code'),
-                        'message_id': email_result.get('message_id')
+                        'message_id': email_result.get('message_id'),
+                        'message': 'User registered successfully'
                     }
-                    
+
+                    print(
+                        f"Registration completed successfully for user: {user.username}")
+
                 except User.DoesNotExist:
+                    print(f"User not found after creation: {user_data}")
                     pass
-            
+
             return response
         except Exception as e:
-            print("Registration error:", str(e))
+            print(f"Registration error: {str(e)}")
+            print(f"Request data: {request.data}")
+            import traceback
+            traceback.print_exc()
             raise
+
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     permission_classes = [permissions.AllowAny]
     serializer_class = CustomTokenObtainPairSerializer
+
 
 class ProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -96,16 +121,16 @@ class ProfileView(APIView):
         try:
             user = request.user
             data = request.data
-            
+
             if 'first_name' in data:
                 user.first_name = data['first_name']
             if 'last_name' in data:
                 user.last_name = data['last_name']
             if 'email' in data:
                 user.email = data['email']
-            
+
             user.save()
-            
+
             return Response({
                 'message': 'Profile updated successfully',
                 'username': user.username,
@@ -123,6 +148,7 @@ class ProfileView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+
 class ImpactEntryListCreateView(generics.ListCreateAPIView):
     serializer_class = ImpactEntrySerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -133,6 +159,7 @@ class ImpactEntryListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+
 class ImpactEntryDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ImpactEntrySerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -140,32 +167,34 @@ class ImpactEntryDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return ImpactEntry.objects.filter(user=self.request.user)
 
+
 class ImpactStatsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         user = request.user
         entries = ImpactEntry.objects.filter(user=user)
-        
+
         # Get date range (last 30 days)
         thirty_days_ago = timezone.now() - timedelta(days=30)
         recent_entries = entries.filter(created_at__gte=thirty_days_ago)
-        
+
         # Calculate stats
         total_entries = entries.count()
         recent_entries_count = recent_entries.count()
-        
+
         # Sum by metric type
         metric_totals = entries.values('metric_type').annotate(
             total_value=Sum('value'),
             avg_value=Avg('value'),
             count=Count('id')
         )
-        
+
         # Recent activity (last 7 days)
         seven_days_ago = timezone.now() - timedelta(days=7)
-        recent_activity = entries.filter(created_at__gte=seven_days_ago).count()
-        
+        recent_activity = entries.filter(
+            created_at__gte=seven_days_ago).count()
+
         return Response({
             'total_entries': total_entries,
             'recent_entries': recent_entries_count,
@@ -173,15 +202,17 @@ class ImpactStatsView(APIView):
             'metric_breakdown': list(metric_totals),
         })
 
+
 class AISuggestionsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         user = request.user
-        
+
         # Get user's recent data
-        entries = ImpactEntry.objects.filter(user=user).order_by('-created_at')[:50]
-        
+        entries = ImpactEntry.objects.filter(
+            user=user).order_by('-created_at')[:50]
+
         if not entries.exists():
             return Response({
                 'suggestions': [{
@@ -192,7 +223,7 @@ class AISuggestionsView(APIView):
                 }],
                 'data_points_analyzed': 0
             })
-        
+
         # Prepare data for AI model
         user_data = {
             'entries': [
@@ -207,17 +238,17 @@ class AISuggestionsView(APIView):
                 for entry in entries
             ]
         }
-        
+
         try:
             # Use the global AI model instance
             result = carbon_ai_model.predict_suggestions(user_data)
-            
+
             return Response({
                 'suggestions': result.get('suggestions', []),
                 'data_points_analyzed': len(entries),
                 'ai_model': 'CarbonAIModel v1.0'
             })
-            
+
         except Exception as e:
             print(f"AI suggestion error: {str(e)}")
             return Response({
@@ -230,100 +261,40 @@ class AISuggestionsView(APIView):
                 'error': str(e)
             }, status=500)
 
-class ChatGPTSuggestionsView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request):
-        user = request.user
-        
-        # Get user's recent carbon data
-        entries = ImpactEntry.objects.filter(user=user).order_by('-created_at')[:20]
-        
-        if not entries.exists():
-            return Response({
-                'suggestion': "Start by adding your first carbon usage entry to get personalized suggestions!"
-            })
-        
-        # Prepare data for ChatGPT
-        carbon_data = []
-        for entry in entries:
-            carbon_data.append(f"{entry.metric_type}: {entry.value} ({entry.description})")
-        
-        user_data_summary = "\n".join(carbon_data)
-        
-        # Create prompt for ChatGPT
-        prompt = f"""
-        As a climate expert, analyze this user's carbon usage data and provide personalized suggestions to reduce their environmental impact.
-        
-        User's recent carbon usage:
-        {user_data_summary}
-        
-        Please provide:
-        1. A brief analysis of their current carbon footprint
-        2. 3-5 specific, actionable suggestions to reduce their impact
-        3. Encouraging tone with practical tips
-        
-        Keep the response under 300 words and make it personal and actionable.
-        """
-        
-        try:
-            # Initialize OpenAI client with new API
-            client = openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-            
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a helpful climate expert providing personalized carbon reduction advice."},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=400,
-                temperature=0.7
-            )
-            
-            suggestion = response.choices[0].message.content
-            
-            return Response({
-                'suggestion': suggestion,
-                'data_points_analyzed': len(entries)
-            })
-            
-        except Exception as e:
-            return Response({
-                'suggestion': "I'm having trouble analyzing your data right now. Please try again later or add more entries to get better suggestions.",
-                'error': str(e)
-            }, status=500)
-
+ 
 class ChangePasswordView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def post(self, request):
         user = request.user
         current_password = request.data.get('current_password')
         new_password = request.data.get('new_password')
-        
+
         if not all([current_password, new_password]):
             return Response({'error': 'Both current and new password are required'}, status=400)
-        
+
         # Check current password
         if not user.check_password(current_password):
             return Response({'error': 'Current password is incorrect'}, status=400)
-        
+
         # Set new password
         user.set_password(new_password)
         user.save()
-        
+
         # Send password change confirmation email
         email_result = sendgrid_service.send_password_change_confirmation(user)
-        
+
         return Response({
             'message': 'Password changed successfully',
             'email_sent': email_result['success'],
             'email_status': email_result.get('status_code')
         })
 
+
 class TestUserView(APIView):
     permission_classes = [permissions.AllowAny]
-    
+
     def get(self, request):
         return Response({
             'message': 'API is working!',
@@ -331,9 +302,10 @@ class TestUserView(APIView):
             'timestamp': timezone.now().isoformat()
         })
 
+
 class HealthCheckView(APIView):
     permission_classes = [permissions.AllowAny]
-    
+
     def get(self, request):
         return Response({
             'status': 'healthy',
@@ -342,16 +314,17 @@ class HealthCheckView(APIView):
             'timestamp': timezone.now().isoformat()
         })
 
+
 class SimpleTestView(APIView):
     permission_classes = [permissions.AllowAny]
-    
+
     def get(self, request):
         return Response({
             'message': 'Simple test endpoint working!',
             'status': 'success',
             'timestamp': timezone.now().isoformat()
         })
-    
+
     def post(self, request):
         return Response({
             'message': 'POST request received!',
@@ -360,15 +333,18 @@ class SimpleTestView(APIView):
             'timestamp': timezone.now().isoformat()
         })
 
+
 @login_required
 def dashboard_view(request):
     """Web view for user dashboard"""
     user = request.user
-    entries = ImpactEntry.objects.filter(user=user).order_by('-created_at')[:10]
-    
+    entries = ImpactEntry.objects.filter(
+        user=user).order_by('-created_at')[:10]
+
     total_entries = ImpactEntry.objects.filter(user=user).count()
-    total_carbon = ImpactEntry.objects.filter(user=user, metric_type='carbon').aggregate(Sum('value'))['value__sum'] or 0
-    
+    total_carbon = ImpactEntry.objects.filter(
+        user=user, metric_type='carbon').aggregate(Sum('value'))['value__sum'] or 0
+
     context = {
         'user': user,
         'entries': entries,
@@ -377,24 +353,27 @@ def dashboard_view(request):
     }
     return render(request, 'tracker/dashboard.html', context)
 
+
 @login_required
 def entries_list_view(request):
     """Web view for listing all entries"""
-    entries = ImpactEntry.objects.filter(user=request.user).order_by('-created_at')
+    entries = ImpactEntry.objects.filter(
+        user=request.user).order_by('-created_at')
     return render(request, 'tracker/entries_list.html', {'entries': entries})
+
 
 @login_required
 def stats_view(request):
     """Web view for statistics"""
     user = request.user
     entries = ImpactEntry.objects.filter(user=user)
-    
+
     total_entries = entries.count()
     metric_breakdown = entries.values('metric_type').annotate(
         total_value=Sum('value'),
         count=Count('id')
     )
-    
+
     context = {
         'user': user,
         'total_entries': total_entries,
@@ -406,17 +385,17 @@ def stats_view(request):
 class PasswordResetRequestView(APIView):
     """Request password reset via email"""
     permission_classes = [permissions.AllowAny]
-    
+
     def post(self, request):
         email = request.data.get('email')
-        
+
         if not email:
             return Response({'error': 'Email address is required'}, status=400)
-        
+
         try:
             user = User.objects.get(email=email)
             result = sendgrid_service.send_password_reset_email(user, request)
-            
+
             if result['success']:
                 return Response({
                     'message': 'Password reset email sent successfully',
@@ -428,7 +407,7 @@ class PasswordResetRequestView(APIView):
                     'error': 'Failed to send email',
                     'details': result.get('error')
                 }, status=500)
-                
+
         except User.DoesNotExist:
             # Don't reveal if user exists or not for security
             return Response({
@@ -441,35 +420,63 @@ class PasswordResetRequestView(APIView):
 class PasswordResetConfirmView(APIView):
     """Confirm password reset with token"""
     permission_classes = [permissions.AllowAny]
-    
+
     def post(self, request):
         uid = request.data.get('uid')
         token = request.data.get('token')
         new_password = request.data.get('new_password')
-        
+
         if not all([uid, token, new_password]):
             return Response({
                 'error': 'All fields are required: uid, token, new_password'
             }, status=400)
-        
+
         # Validate the reset token
         validation_result = sendgrid_service.validate_reset_token(uid, token)
-        
+
         if not validation_result['valid']:
             return Response({
                 'error': validation_result['error']
             }, status=400)
-        
+
         # Update user password
         user = validation_result['user']
         user.set_password(new_password)
         user.save()
-        
+
         # Send confirmation email
         email_result = sendgrid_service.send_password_change_confirmation(user)
-        
+
         return Response({
             'message': 'Password reset successfully',
             'email_sent': email_result['success'],
             'status': 'success'
         })
+
+
+class UserProfileView(APIView):
+    """Get basic user profile information"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        # Get user's impact entry count
+        impact_count = ImpactEntry.objects.filter(user=user).count()
+
+        # Get user's join date
+        join_date = user.date_joined.strftime(
+            '%Y-%m-%d') if user.date_joined else None
+
+        profile_data = {
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name or '',
+            'last_name': user.last_name or '',
+            'date_joined': join_date,
+            'impact_entries_count': impact_count,
+            'is_active': user.is_active,
+            'last_login': user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else None
+        }
+
+        return Response(profile_data)
