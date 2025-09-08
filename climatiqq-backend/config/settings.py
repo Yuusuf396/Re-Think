@@ -63,7 +63,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -80,51 +80,14 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Try to use environment variable, fallback to SQLite for development
-DATABASE_URL = config('DATABASE_URL', default=None)
-
-if DATABASE_URL and DATABASE_URL.startswith('postgres'):
-    # Parse Supabase PostgreSQL URL manually for better compatibility
-    import re
-    from urllib.parse import urlparse
-    
-    # Parse the DATABASE_URL
-    parsed = urlparse(DATABASE_URL)
-    
-    # Extract components
-    db_name = parsed.path[1:] if parsed.path else 'postgres'
-    db_user = parsed.username
-    db_password = parsed.password
-    db_host = parsed.hostname
-    db_port = parsed.port or 5432
-    
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': db_name,
-            'USER': db_user,
-            'PASSWORD': db_password,
-            'HOST': db_host,
-            'PORT': db_port,
-            'OPTIONS': {
-                'sslmode': 'require',  # Supabase requires SSL
-            },
-            'CONN_MAX_AGE': 600,
-        }
+# Use SQLite for local development
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-    print("✅ Using Supabase PostgreSQL database")
-    print(f"🌐 Host: {db_host}")
-    print(f"📁 Database: {db_name}")
-    print(f"👤 User: {db_user}")
-else:
-    # SQLite configuration for development
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-    print("🔄 Using SQLite database for development (set DATABASE_URL for Supabase)")
+}
+print("Using SQLite database for local development")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -162,6 +125,10 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

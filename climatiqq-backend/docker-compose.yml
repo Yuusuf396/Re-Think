@@ -4,15 +4,15 @@ services:
   backend:
     build: .
     container_name: django_app
-    command: sh start.sh
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     volumes:
-      - .:/app   # hot reload on code changes
+      - .:/app
     ports:
       - "8000:8000"
-    env_file:
-      - .env
     environment:
       - DEBUG=True
+      - SECRET_KEY=django-insecure-dev-key-for-development-only
       - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
       - CORS_ALLOW_ALL_ORIGINS=True
+      - EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
     restart: unless-stopped

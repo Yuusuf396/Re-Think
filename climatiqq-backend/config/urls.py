@@ -17,6 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
+from django.conf import settings
+from django.conf.urls.static import static
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -94,3 +96,8 @@ urlpatterns = [
     # path('api/v1/email-verification/confirm/', EmailVerificationConfirmView.as_view(), name='email_verification_confirm'),
     # path('api/v1/email-test/', EmailTestView.as_view(), name='email_test'),
 ]
+
+# Serve media files in development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

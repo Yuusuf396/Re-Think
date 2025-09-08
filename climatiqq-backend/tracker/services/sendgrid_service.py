@@ -93,7 +93,7 @@ class SendGridService:
             }
             
             # Render HTML template
-            html_content = render_to_string('emails/registration_welcome.html', context)
+            html_content = render_to_string('tracker/emails/registration_welcome.html', context)
             
             # Create plain text version
             text_content = strip_tags(html_content)
@@ -131,7 +131,7 @@ class SendGridService:
             }
             
             # Render HTML template
-            html_content = render_to_string('emails/password_reset.html', context)
+            html_content = render_to_string('tracker/emails/password_reset.html', context)
             
             # Create plain text version
             text_content = strip_tags(html_content)
@@ -161,7 +161,7 @@ class SendGridService:
             }
             
             # Render HTML template
-            html_content = render_to_string('emails/password_changed.html', context)
+            html_content = render_to_string('tracker/emails/password_changed.html', context)
             
             # Create plain text version
             text_content = strip_tags(html_content)
