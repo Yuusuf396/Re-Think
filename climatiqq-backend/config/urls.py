@@ -89,12 +89,6 @@ urlpatterns = [
     path('', test_view, name='root'),
     path('db-test/', db_test_view, name='db_test'),
     path('logout/', LogoutView.as_view(), name='logout'),
-    # Commented out email-related views
-    # path('api/v1/password-reset/', PasswordResetRequestView.as_view(), name='password_reset_request'),
-    # path('api/v1/password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    # path('api/v1/email-verification/', EmailVerificationView.as_view(), name='email_verification'),
-    # path('api/v1/email-verification/confirm/', EmailVerificationConfirmView.as_view(), name='email_verification_confirm'),
-    # path('api/v1/email-test/', EmailTestView.as_view(), name='email_test'),
 ]
 
 # Serve media files in development

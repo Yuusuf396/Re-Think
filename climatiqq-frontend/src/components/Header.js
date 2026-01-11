@@ -2,9 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './Header.css';
 
-const Header = ({ onLogout, isAuthenticated, darkMode, onToggleDarkMode }) => {
+const Header = ({ onLogout, isAuthenticated }) => {
   return (
-    <header className={`header ${darkMode ? 'dark' : ''}`}>
+    <header className="header">
       <div className="header-content">
         <Link to="/dashboard" className="logo">
           <div className="logo-icon">
@@ -24,11 +24,6 @@ const Header = ({ onLogout, isAuthenticated, darkMode, onToggleDarkMode }) => {
         {isAuthenticated && (
           <nav className="nav-menu">
             <Link to="/dashboard" className="nav-link">Dashboard</Link>
-            <Link to="/suggestions" className="nav-link">AI Suggestions</Link>
-            <Link to="/profile" className="nav-link">Profile</Link>
-            <button onClick={onToggleDarkMode} className="dark-mode-toggle">
-              {darkMode ? "☀️" : "🌙"}
-            </button>
             <button onClick={onLogout} className="nav-link logout-btn">Logout</button>
           </nav>
         )}

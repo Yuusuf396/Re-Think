@@ -1,208 +1,161 @@
 // API Service for Rethink - Centralized API calls
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL =
+	process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
 
 class ApiService {
-    constructor() {
-        this.baseURL = API_BASE_URL;
-    }
+	constructor() {
+		this.baseURL = API_BASE_URL;
+	}
 
-    // Helper method to get auth headers
-    getAuthHeaders() {
-        const token = localStorage.getItem('token');
-        return {
-            'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Bearer ${token}` })
-        };
-    }
+	// Helper method to get auth headers
+	getAuthHeaders() {
+		const token = localStorage.getItem("token");
+		return {
+			"Content-Type": "application/json",
+			...(token && { Authorization: `Bearer ${token}` }),
+		};
+	}
 
-    // Generic request method
-    async request(endpoint, options = {}) {
-        const url = `${this.baseURL}${endpoint}`;
-        const config = {
-            headers: this.getAuthHeaders(),
-            ...options
-        };
+	// Generic request method
+	async request(endpoint, options = {}) {
+		const url = `${this.baseURL}${endpoint}`;
+		const config = {
+			headers: this.getAuthHeaders(),
+			...options,
+		};
 
-        try {
-            const response = await fetch(url, config);
-            
-            // Check if response is JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                throw new Error(`Expected JSON response but got ${contentType}. Server may be down or endpoint not found.`);
-            }
-            
-            const data = await response.json();
+		try {
+			const response = await fetch(url, config);
 
-            if (!response.ok) {
-                throw new Error(data.error || data.detail || `HTTP ${response.status}: ${response.statusText}`);
-            }
+			// Check if response is JSON
+			const contentType = response.headers.get("content-type");
+			if (!contentType || !contentType.includes("application/json")) {
+				throw new Error(
+					`Expected JSON response but got ${contentType}. Server may be down or endpoint not found.`
+				);
+			}
 
-            return data;
-        } catch (error) {
-            console.error(`API Error (${endpoint}):`, error);
-            throw error;
-        }
-    }
+			const data = await response.json();
 
-    // Authentication API calls - USING WORKING LEGACY ENDPOINTS
-    auth = {
-        // Registration - using legacy endpoint
-        register: async (userData) => {
-            return this.request('/register/', {
-                method: 'POST',
-                body: JSON.stringify({
-                    username: userData.username,
-                    email: userData.email,
-                    password: userData.password,
-                    password_confirm: userData.passwordConfirm
-                })
-            });
-        },
+			if (!response.ok) {
+				// Handle Django REST Framework validation errors
+				let errorMessage = data.detail || data.error;
 
-        // Login - using legacy endpoint
-        login: async (credentials) => {
-            return this.request('/login/', {
-                method: 'POST',
-                body: JSON.stringify({
-                    username: credentials.username,
-                    password: credentials.password
-                })
-            });
-        },
+				// If no detail/error, check for field-specific errors
+				if (!errorMessage) {
+					const fieldErrors = [];
+					for (const [field, messages] of Object.entries(data)) {
+						if (Array.isArray(messages)) {
+							fieldErrors.push(...messages);
+						} else if (typeof messages === "string") {
+							fieldErrors.push(messages);
+						}
+					}
+					errorMessage =
+						fieldErrors.length > 0
+							? fieldErrors.join(". ")
+							: `HTTP ${response.status}: ${response.statusText}`;
+				}
 
-        // Logout - using legacy endpoint
-        logout: async () => {
-            return this.request('/logout/', {
-                method: 'POST'
-            });
-        },
+				const error = new Error(errorMessage);
+				error.response = data;
+				throw error;
+			}
 
-        // Password change - using legacy endpoint
-        changePassword: async (passwordData) => {
-            return this.request('/change-password/', {
-                method: 'POST',
-                body: JSON.stringify({
-                    current_password: passwordData.currentPassword,
-                    new_password: passwordData.newPassword,
-                    new_password_confirm: passwordData.newPasswordConfirm
-                })
-            });
-        },
+			return data;
+		} catch (error) {
+			console.error(`API Error (${endpoint}):`, error);
+			throw error;
+		}
+	}
 
-        // Password reset request - using legacy endpoint
-        requestPasswordReset: async (email) => {
-            return this.request('/password-reset/', {
-                method: 'POST',
-                body: JSON.stringify({ email })
-            });
-        },
+	// Authentication API calls - USING WORKING LEGACY ENDPOINTS
+	auth = {
+		// Registration - using legacy endpoint
+		register: async (userData) => {
+			return this.request("/register/", {
+				method: "POST",
+				body: JSON.stringify({
+					username: userData.username,
+					email: userData.email,
+					password: userData.password,
+					password_confirm: userData.passwordConfirm,
+				}),
+			});
+		},
 
-        // Password reset confirmation - using legacy endpoint
-        confirmPasswordReset: async (token, newPassword, newPasswordConfirm) => {
-            return this.request('/password-reset/confirm/', {
-                method: 'POST',
-                body: JSON.stringify({
-                    token,
-                    new_password: newPassword,
-                    new_password_confirm: newPasswordConfirm
-                })
-            });
-        },
+		// Login - using legacy endpoint
+		login: async (credentials) => {
+			return this.request("/login/", {
+				method: "POST",
+				body: JSON.stringify({
+					username: credentials.username,
+					password: credentials.password,
+				}),
+			});
+		},
 
-        // Get user profile - using legacy endpoint
-        getProfile: async () => {
-            return this.request('/profile/');
-        },
+		// Logout - using legacy endpoint
+		logout: async () => {
+			return this.request("/logout/", {
+				method: "POST",
+			});
+		},
+	};
 
-        // Update user profile - using legacy endpoint
-        updateProfile: async (profileData) => {
-            return this.request('/profile/', {
-                method: 'PUT',
-                body: JSON.stringify(profileData)
-            });
-        },
+	// Impact entries API calls
+	entries = {
+		// Get all entries
+		getAll: async (filters = {}) => {
+			// Build query string from filters
+			const params = new URLSearchParams();
+			if (filters.metric_type && filters.metric_type !== "all") {
+				params.append("metric_type", filters.metric_type);
+			}
 
-        // Email verification - using legacy endpoint
-        sendEmailVerification: async () => {
-            return this.request('/email-verification/', {
-                method: 'POST'
-            });
-        },
+			const queryString = params.toString();
+			const endpoint = queryString ? `/entries/?${queryString}` : "/entries/";
+			return this.request(endpoint);
+		},
 
-        // Email verification confirmation - using legacy endpoint
-        confirmEmailVerification: async (token) => {
-            return this.request('/email-verification/confirm/', {
-                method: 'POST',
-                body: JSON.stringify({ token })
-            });
-        }
-    };
+		// Create new entry
+		create: async (entryData) => {
+			return this.request("/entries/", {
+				method: "POST",
+				body: JSON.stringify(entryData),
+			});
+		},
 
-    // Impact entries API calls
-    entries = {
-        // Get all entries
-        getAll: async () => {
-            return this.request('/entries/');
-        },
+		// Get single entry
+		getById: async (id) => {
+			return this.request(`/entries/${id}/`);
+		},
 
-        // Create new entry
-        create: async (entryData) => {
-            return this.request('/entries/', {
-                method: 'POST',
-                body: JSON.stringify(entryData)
-            });
-        },
+		// Update entry
+		update: async (id, entryData) => {
+			return this.request(`/entries/${id}/`, {
+				method: "PUT",
+				body: JSON.stringify(entryData),
+			});
+		},
 
-        // Get single entry
-        getById: async (id) => {
-            return this.request(`/entries/${id}/`);
-        },
+		// Delete entry
+		delete: async (id) => {
+			return this.request(`/entries/${id}/`, {
+				method: "DELETE",
+			});
+		},
+	};
 
-        // Update entry
-        update: async (id, entryData) => {
-            return this.request(`/entries/${id}/`, {
-                method: 'PUT',
-                body: JSON.stringify(entryData)
-            });
-        },
-
-        // Delete entry
-        delete: async (id) => {
-            return this.request(`/entries/${id}/`, {
-                method: 'DELETE'
-            });
-        }
-    };
-
-    // Statistics API calls
-    stats = {
-        // Get impact statistics
-        getImpactStats: async () => {
-            return this.request('/stats/');
-        }
-    };
-
-    // AI suggestions API calls
-    ai = {
-        // Get AI suggestions
-        getSuggestions: async (userData) => {
-            return this.request('/ai-suggestions/', {
-                method: 'POST',
-                body: JSON.stringify(userData)
-            });
-        },
-
-        // Get ChatGPT suggestions
-        getChatGPTSuggestions: async (prompt) => {
-            return this.request('/chatgpt-suggestions/', {
-                method: 'POST',
-                body: JSON.stringify({ prompt })
-            });
-        }
-    };
+	// Statistics API calls
+	stats = {
+		// Get impact statistics
+		getImpactStats: async () => {
+			return this.request("/stats/");
+		},
+	};
 }
 
 // Create and export a single instance
 const apiService = new ApiService();
-export default apiService; 
+export default apiService;
