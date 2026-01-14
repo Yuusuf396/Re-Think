@@ -104,14 +104,21 @@ else:
 
     if DB_NAME:
         # PostgreSQL configuration
+        DB_HOST = config('DB_HOST', default='localhost')
+        # Only require SSL for remote databases (Supabase), not localhost
+        db_options = {}
+        if DB_HOST not in ['localhost', '127.0.0.1', 'db']:
+            db_options['sslmode'] = 'require'
+
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.postgresql',
                 'NAME': DB_NAME,
                 'USER': config('DB_USER', default='postgres'),
                 'PASSWORD': config('DB_PASSWORD', default=''),
-                'HOST': config('DB_HOST', default='localhost'),
+                'HOST': DB_HOST,
                 'PORT': config('DB_PORT', default='5432'),
+                'OPTIONS': db_options,
             }
         }
     else:

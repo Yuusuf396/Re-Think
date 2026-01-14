@@ -36,11 +36,50 @@ function App() {
 	}, []);
 
 	const handleLogin = (newToken, userData) => {
+		// #region agent log
+		fetch("http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				location: "App.js:38",
+				message: "handleLogin called",
+				data: {
+					hasToken: !!newToken,
+					hasUserData: !!userData,
+					userDataKeys: userData ? Object.keys(userData) : [],
+				},
+				timestamp: Date.now(),
+				sessionId: "debug-session",
+				runId: "run1",
+				hypothesisId: "F",
+			}),
+		}).catch(() => {});
+		// #endregion
+
 		setToken(newToken);
 		setUser(userData);
 		setIsAuthenticated(true);
 		localStorage.setItem("token", newToken);
 		localStorage.setItem("user", JSON.stringify(userData || {}));
+
+		// #region agent log
+		fetch("http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				location: "App.js:50",
+				message: "handleLogin completed",
+				data: {
+					tokenInStorage: !!localStorage.getItem("token"),
+					userInStorage: !!localStorage.getItem("user"),
+				},
+				timestamp: Date.now(),
+				sessionId: "debug-session",
+				runId: "run1",
+				hypothesisId: "F",
+			}),
+		}).catch(() => {});
+		// #endregion
 	};
 
 	const handleLogout = async () => {
@@ -96,15 +135,37 @@ function App() {
 					<Route
 						path="/dashboard"
 						element={
-							isAuthenticated ? (
-								<Dashboard
-									token={token}
-									user={user}
-									onLogout={handleLogout}
-								/>
-							) : (
-								<Navigate to="/login" />
-							)
+							(() => {
+								// #region agent log
+								fetch("http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e", {
+									method: "POST",
+									headers: { "Content-Type": "application/json" },
+									body: JSON.stringify({
+										location: "App.js:98",
+										message: "Dashboard route check",
+										data: {
+											isAuthenticated,
+											hasToken: !!token,
+											hasUser: !!user,
+										},
+										timestamp: Date.now(),
+										sessionId: "debug-session",
+										runId: "run1",
+										hypothesisId: "F",
+									}),
+								}).catch(() => {});
+								// #endregion
+
+								return isAuthenticated ? (
+									<Dashboard
+										token={token}
+										user={user}
+										onLogout={handleLogout}
+									/>
+								) : (
+									<Navigate to="/login" />
+								);
+							})()
 						}
 					/>
 					<Route

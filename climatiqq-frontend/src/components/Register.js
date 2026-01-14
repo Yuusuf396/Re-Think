@@ -30,6 +30,27 @@ const Register = ({ onLogin }) => {
 		setIsLoading(true);
 		setError("");
 
+		// #region agent log
+		fetch("http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				location: "Register.js:28",
+				message: "handleSubmit entry",
+				data: {
+					username: formData.username,
+					email: formData.email,
+					hasPassword: !!formData.password,
+					hasPasswordConfirm: !!formData.passwordConfirm,
+				},
+				timestamp: Date.now(),
+				sessionId: "debug-session",
+				runId: "run1",
+				hypothesisId: "A",
+			}),
+		}).catch(() => {});
+		// #endregion
+
 		if (formData.password !== formData.passwordConfirm) {
 			setError("Passwords do not match");
 			setIsLoading(false);
@@ -37,6 +58,25 @@ const Register = ({ onLogin }) => {
 		}
 
 		try {
+			// #region agent log
+			fetch(
+				"http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e",
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						location: "Register.js:40",
+						message: "Before API call",
+						data: { username: formData.username, email: formData.email },
+						timestamp: Date.now(),
+						sessionId: "debug-session",
+						runId: "run1",
+						hypothesisId: "A",
+					}),
+				}
+			).catch(() => {});
+			// #endregion
+
 			const response = await apiService.auth.register({
 				username: formData.username,
 				email: formData.email,
@@ -44,14 +84,118 @@ const Register = ({ onLogin }) => {
 				passwordConfirm: formData.passwordConfirm,
 			});
 
+			// #region agent log
+			fetch(
+				"http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e",
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						location: "Register.js:47",
+						message: "After API call success",
+						data: {
+							hasResponse: !!response,
+							hasAccess: !!response?.access,
+							hasUser: !!response?.user,
+							username: response?.user?.username,
+						},
+						timestamp: Date.now(),
+						sessionId: "debug-session",
+						runId: "run1",
+						hypothesisId: "E",
+					}),
+				}
+			).catch(() => {});
+			// #endregion
+
 			if (response && response.access) {
 				localStorage.setItem("token", response.access);
 				localStorage.setItem("refreshToken", response.refresh || "");
 			}
 
+			// #region agent log
+			fetch("http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					location: "Register.js:116",
+					message: "Before onLogin call",
+					data: {
+						hasAccess: !!response?.access,
+						hasUser: !!response?.user,
+						userData: response?.user,
+					},
+					timestamp: Date.now(),
+					sessionId: "debug-session",
+					runId: "run1",
+					hypothesisId: "F",
+				}),
+			}).catch(() => {});
+			// #endregion
+
 			onLogin(response?.access || "", response?.user || {});
+
+			// #region agent log
+			fetch("http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					location: "Register.js:130",
+					message: "After onLogin, before navigate",
+					data: {
+						tokenInStorage: !!localStorage.getItem("token"),
+					},
+					timestamp: Date.now(),
+					sessionId: "debug-session",
+					runId: "run1",
+					hypothesisId: "F",
+				}),
+			}).catch(() => {});
+			// #endregion
+
 			navigate("/dashboard");
+
+			// #region agent log
+			fetch("http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					location: "Register.js:143",
+					message: "After navigate call",
+					data: {},
+					timestamp: Date.now(),
+					sessionId: "debug-session",
+					runId: "run1",
+					hypothesisId: "F",
+				}),
+			}).catch(() => {});
+			// #endregion
 		} catch (error) {
+			// #region agent log
+			fetch(
+				"http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e",
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						location: "Register.js:54",
+						message: "Registration error caught",
+						data: {
+							errorMessage: error.message,
+							errorName: error.name,
+							hasResponse: !!error.response,
+							responseStatus: error.response?.status,
+							responseData: error.response,
+						},
+						timestamp: Date.now(),
+						sessionId: "debug-session",
+						runId: "run1",
+						hypothesisId: "D",
+					}),
+				}
+			).catch(() => {});
+			// #endregion
+
 			console.error("Registration error:", error);
 			setError(error.message || "Registration failed. Please try again.");
 		} finally {
@@ -131,7 +275,9 @@ const Register = ({ onLogin }) => {
 
 						{error && <div className="error-banner">{error}</div>}
 
-						<form onSubmit={handleSubmit} className="auth-form">
+						<form
+							onSubmit={handleSubmit}
+							className="auth-form">
 							<div className="form-group">
 								<label htmlFor="username">
 									Username <span className="label-hint">3-30 characters</span>
@@ -190,8 +336,7 @@ const Register = ({ onLogin }) => {
 										type="button"
 										className="input-action"
 										onClick={() => setShowPassword((prev) => !prev)}
-										disabled={isLoading}
-									>
+										disabled={isLoading}>
 										{showPassword ? "Hide" : "Show"}
 									</button>
 								</div>
@@ -217,8 +362,7 @@ const Register = ({ onLogin }) => {
 										type="button"
 										className="input-action"
 										onClick={() => setShowPasswordConfirm((prev) => !prev)}
-										disabled={isLoading}
-									>
+										disabled={isLoading}>
 										{showPasswordConfirm ? "Hide" : "Show"}
 									</button>
 								</div>
@@ -227,8 +371,7 @@ const Register = ({ onLogin }) => {
 							<button
 								type="submit"
 								className="cta-button"
-								disabled={isLoading}
-							>
+								disabled={isLoading}>
 								{isLoading ? "Creating Account..." : "Create Account"}
 							</button>
 						</form>

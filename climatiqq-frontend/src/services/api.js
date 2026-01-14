@@ -24,18 +24,153 @@ class ApiService {
 			...options,
 		};
 
+		// #region agent log
+		fetch("http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				location: "api.js:20",
+				message: "request method entry",
+				data: {
+					url,
+					endpoint,
+					hasMethod: !!options.method,
+					hasBody: !!options.body,
+					method: options.method,
+					bodyPreview: options.body?.substring(0, 100),
+					baseURL: this.baseURL,
+				},
+				timestamp: Date.now(),
+				sessionId: "debug-session",
+				runId: "run1",
+				hypothesisId: "A",
+			}),
+		}).catch(() => {});
+		// #endregion
+
+		// #region agent log
+		fetch("http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				location: "api.js:25",
+				message: "Config built",
+				data: {
+					hasMethod: !!config.method,
+					hasBody: !!config.body,
+					method: config.method,
+					bodyType: typeof config.body,
+					headersKeys: Object.keys(config.headers || {}),
+				},
+				timestamp: Date.now(),
+				sessionId: "debug-session",
+				runId: "run1",
+				hypothesisId: "A",
+			}),
+		}).catch(() => {});
+		// #endregion
+
 		try {
+			// #region agent log
+			fetch(
+				"http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e",
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						location: "api.js:30",
+						message: "Before fetch call",
+						data: { url, method: config.method, hasBody: !!config.body },
+						timestamp: Date.now(),
+						sessionId: "debug-session",
+						runId: "run1",
+						hypothesisId: "B",
+					}),
+				}
+			).catch(() => {});
+			// #endregion
+
 			const response = await fetch(url, config);
+
+			// #region agent log
+			fetch(
+				"http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e",
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						location: "api.js:32",
+						message: "After fetch call",
+						data: {
+							status: response.status,
+							statusText: response.statusText,
+							ok: response.ok,
+							contentType: response.headers.get("content-type"),
+							url: response.url,
+						},
+						timestamp: Date.now(),
+						sessionId: "debug-session",
+						runId: "run1",
+						hypothesisId: "B",
+					}),
+				}
+			).catch(() => {});
+			// #endregion
 
 			// Check if response is JSON
 			const contentType = response.headers.get("content-type");
 			if (!contentType || !contentType.includes("application/json")) {
+				// #region agent log
+				fetch(
+					"http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e",
+					{
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							location: "api.js:35",
+							message: "Non-JSON response error",
+							data: { contentType, status: response.status },
+							timestamp: Date.now(),
+							sessionId: "debug-session",
+							runId: "run1",
+							hypothesisId: "C",
+						}),
+					}
+				).catch(() => {});
+				// #endregion
+
 				throw new Error(
 					`Expected JSON response but got ${contentType}. Server may be down or endpoint not found.`
 				);
 			}
 
 			const data = await response.json();
+
+			// #region agent log
+			fetch(
+				"http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e",
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						location: "api.js:41",
+						message: "Response parsed",
+						data: {
+							ok: response.ok,
+							status: response.status,
+							hasData: !!data,
+							hasAccess: !!data.access,
+							hasUser: !!data.user,
+							dataKeys: Object.keys(data || {}),
+						},
+						timestamp: Date.now(),
+						sessionId: "debug-session",
+						runId: "run1",
+						hypothesisId: "C",
+					}),
+				}
+			).catch(() => {});
+			// #endregion
 
 			if (!response.ok) {
 				// Handle Django REST Framework validation errors
@@ -57,13 +192,74 @@ class ApiService {
 							: `HTTP ${response.status}: ${response.statusText}`;
 				}
 
+				// #region agent log
+				fetch(
+					"http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e",
+					{
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							location: "api.js:58",
+							message: "Response not ok, throwing error",
+							data: { status: response.status, errorMessage, data },
+							timestamp: Date.now(),
+							sessionId: "debug-session",
+							runId: "run1",
+							hypothesisId: "D",
+						}),
+					}
+				).catch(() => {});
+				// #endregion
+
 				const error = new Error(errorMessage);
 				error.response = data;
 				throw error;
 			}
 
+			// #region agent log
+			fetch(
+				"http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e",
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						location: "api.js:65",
+						message: "Request successful, returning data",
+						data: { hasAccess: !!data.access, hasUser: !!data.user },
+						timestamp: Date.now(),
+						sessionId: "debug-session",
+						runId: "run1",
+						hypothesisId: "E",
+					}),
+				}
+			).catch(() => {});
+			// #endregion
+
 			return data;
 		} catch (error) {
+			// #region agent log
+			fetch(
+				"http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e",
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						location: "api.js:67",
+						message: "Request error caught",
+						data: {
+							errorMessage: error.message,
+							errorName: error.name,
+							errorStack: error.stack?.substring(0, 200),
+						},
+						timestamp: Date.now(),
+						sessionId: "debug-session",
+						runId: "run1",
+						hypothesisId: "D",
+					}),
+				}
+			).catch(() => {});
+			// #endregion
+
 			console.error(`API Error (${endpoint}):`, error);
 			throw error;
 		}
@@ -73,14 +269,59 @@ class ApiService {
 	auth = {
 		// Registration - using legacy endpoint
 		register: async (userData) => {
+			// #region agent log
+			fetch(
+				"http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e",
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						location: "api.js:75",
+						message: "register method entry",
+						data: {
+							username: userData.username,
+							email: userData.email,
+							hasPassword: !!userData.password,
+							hasPasswordConfirm: !!userData.passwordConfirm,
+						},
+						timestamp: Date.now(),
+						sessionId: "debug-session",
+						runId: "run1",
+						hypothesisId: "A",
+					}),
+				}
+			).catch(() => {});
+			// #endregion
+
+			const requestBody = {
+				username: userData.username,
+				email: userData.email,
+				password: userData.password,
+				password_confirm: userData.passwordConfirm,
+			};
+
+			// #region agent log
+			fetch(
+				"http://127.0.0.1:7242/ingest/22113505-b882-4f19-9832-adabec7f412e",
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						location: "api.js:82",
+						message: "Before request call",
+						data: { requestBody, bodyStringified: JSON.stringify(requestBody) },
+						timestamp: Date.now(),
+						sessionId: "debug-session",
+						runId: "run1",
+						hypothesisId: "A",
+					}),
+				}
+			).catch(() => {});
+			// #endregion
+
 			return this.request("/register/", {
 				method: "POST",
-				body: JSON.stringify({
-					username: userData.username,
-					email: userData.email,
-					password: userData.password,
-					password_confirm: userData.passwordConfirm,
-				}),
+				body: JSON.stringify(requestBody),
 			});
 		},
 

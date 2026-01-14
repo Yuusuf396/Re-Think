@@ -27,8 +27,8 @@ import {
 	HelpCircle,
 	Home,
 	LogOut,
-	Moon,
-	Sun,
+	// Moon,
+	// Sun,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import apiService from "../services/api";
@@ -45,29 +45,31 @@ const Dashboard = ({ token, user, onLogout }) => {
 	const [showDetailModal, setShowDetailModal] = useState(false);
 	const [selectedEntry, setSelectedEntry] = useState(null);
 	const [filterMetric, setFilterMetric] = useState("all");
-	const [darkMode, setDarkMode] = useState(() => {
-		const saved = localStorage.getItem("darkMode");
-		return saved ? JSON.parse(saved) : false;
-	});
+	// Dark mode toggle - commented out
+	// const [darkMode, setDarkMode] = useState(() => {
+	// 	const saved = localStorage.getItem("darkMode");
+	// 	return saved ? JSON.parse(saved) : false;
+	// });
 	const [newEntry, setNewEntry] = useState({
 		metric_type: "carbon",
 		value: "",
 		description: "",
 	});
 
+	// Dark mode toggle - commented out
 	// Save dark mode preference and apply to document
-	useEffect(() => {
-		localStorage.setItem("darkMode", JSON.stringify(darkMode));
-		if (darkMode) {
-			document.documentElement.classList.add("dark");
-		} else {
-			document.documentElement.classList.remove("dark");
-		}
-	}, [darkMode]);
+	// useEffect(() => {
+	// 	localStorage.setItem("darkMode", JSON.stringify(darkMode));
+	// 	if (darkMode) {
+	// 		document.documentElement.classList.add("dark");
+	// 	} else {
+	// 		document.documentElement.classList.remove("dark");
+	// 	}
+	// }, [darkMode]);
 
-	const toggleDarkMode = () => {
-		setDarkMode(!darkMode);
-	};
+	// const toggleDarkMode = () => {
+	// 	setDarkMode(!darkMode);
+	// };
 
 	const fetchData = useCallback(
 		async (isFilterChange = false) => {
@@ -295,7 +297,8 @@ const Dashboard = ({ token, user, onLogout }) => {
 
 	if (loading) {
 		return (
-			<div className={`vendico-dashboard ${darkMode ? "dark" : ""}`}>
+			<div className="vendico-dashboard">
+				{/* Dark mode: ${darkMode ? "dark" : ""} */}
 				<div className="vendico-sidebar">
 					<div className="sidebar-logo">
 						<Leaf className="logo-icon" />
@@ -313,7 +316,8 @@ const Dashboard = ({ token, user, onLogout }) => {
 	}
 
 	return (
-		<div className={`vendico-dashboard ${darkMode ? "dark" : ""}`}>
+		<div className="vendico-dashboard">
+			{/* Dark mode: ${darkMode ? "dark" : ""} */}
 			{/* Sidebar */}
 			<div className="vendico-sidebar">
 				<div className="sidebar-logo">
@@ -338,13 +342,14 @@ const Dashboard = ({ token, user, onLogout }) => {
 
 					<div className="nav-section">
 						<span className="nav-section-title">OTHER</span>
-						<button
+						{/* Dark mode toggle - commented out */}
+						{/* <button
 							className="nav-item"
 							onClick={toggleDarkMode}
 							title={darkMode ? "Switch to light mode" : "Switch to dark mode"}>
 							{darkMode ? <Sun size={18} /> : <Moon size={18} />}
 							<span>{darkMode ? "Light Mode" : "Dark Mode"}</span>
-						</button>
+						</button> */}
 						<button className="nav-item">
 							<Settings size={18} />
 							<span>Settings</span>
